@@ -52,6 +52,8 @@ function playerHasWon() {
         }
     }
     return false
+
+
 }
 
 restartBtn.addEventListener('click', restart)
