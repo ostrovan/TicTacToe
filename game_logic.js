@@ -15,6 +15,75 @@ const startGame = () => {
 
 let gameActive = true; // Adaugăm o variabilă care să țină evidența dacă jocul este activ sau nu
 
+function getBestMove() {
+    // Prioritatea este să verificăm dacă putem câștiga
+    for (let i = 0; i < winningCombos.length; i++) {
+        const [a, b, c] = winningCombos[i];
+        if (spaces[a] === currentPlayer && spaces[b] === currentPlayer && spaces[c] === null) {
+            return c;
+        }
+        if (spaces[a] === currentPlayer && spaces[c] === currentPlayer && spaces[b] === null) {
+            return b;
+        }
+        if (spaces[b] === currentPlayer && spaces[c] === currentPlayer && spaces[a] === null) {
+            return a;
+        }
+    }
+
+    // Dacă nu putem câștiga, verificăm să blocăm câștigul utilizatorului
+    const opponent = currentPlayer === X_TEXT ? O_TEXT : X_TEXT;
+    for (let i = 0; i < winningCombos.length; i++) {
+        const [a, b, c] = winningCombos[i];
+        if (spaces[a] === opponent && spaces[b] === opponent && spaces[c] === null) {
+            return c;
+        }
+        if (spaces[a] === opponent && spaces[c] === opponent && spaces[b] === null) {
+            return b;
+        }
+        if (spaces[b] === opponent && spaces[c] === opponent && spaces[a] === null) {
+            return a;
+        }
+    }
+
+    // Dacă nu putem câștiga nici să blocăm, alegem o poziție aleatorie
+    const emptySpaces = spaces.reduce((acc, curr, index) => {
+        if (curr === null) {
+            acc.push(index);
+        }
+        return acc;
+    }, []);
+
+    return emptySpaces[Math.floor(Math.random() * emptySpaces.length)];
+}
+
+function computerMove() {
+    if (!gameActive) return; // Dacă jocul nu este activ, nu facem nimic
+
+    const bestMove = getBestMove();
+
+    spaces[bestMove] = currentPlayer;
+    boxes[bestMove].innerText = currentPlayer;
+
+    if (playerHasWon() !== false) {
+        gameActive = false; // Setăm gameActive la false pentru a opri jocul
+        playerText.innerHTML = `${currentPlayer} has won!`;
+        let winning_blocks = playerHasWon();
+
+        winning_blocks.map(box => (boxes[box].style.backgroundColor = winnerIndicator));
+        return;
+    }
+
+    // Verificăm dacă mai sunt spații disponibile
+    if (!spaces.includes(null)) {
+        gameActive = false; // Setăm gameActive la false pentru a opri jocul
+        playerText.innerHTML = "It's a draw!";
+        return;
+    }
+
+    // Schimbăm jucătorul curent
+    currentPlayer = currentPlayer === X_TEXT ? O_TEXT : X_TEXT;
+}
+
 function boxClicked(e) {
     if (!gameActive) return; // Dacă jocul nu este activ, nu facem nimic
 
@@ -41,6 +110,9 @@ function boxClicked(e) {
         }
 
         currentPlayer = currentPlayer == X_TEXT ? O_TEXT : X_TEXT;
+
+        // După ce utilizatorul a făcut o mișcare, programăm mișcarea computerului cu o întârziere de 2 secunde
+        setTimeout(computerMove, 300);
     }
 }
 
