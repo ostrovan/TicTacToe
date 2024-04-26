@@ -13,22 +13,34 @@ const startGame = () => {
     boxes.forEach(box => box.addEventListener('click', boxClicked))
 }
 
+let gameActive = true; // Adaugăm o variabilă care să țină evidența dacă jocul este activ sau nu
+
 function boxClicked(e) {
-    const id = e.target.id
+    if (!gameActive) return; // Dacă jocul nu este activ, nu facem nimic
 
-    if(!spaces[id]){
-        spaces[id] = currentPlayer
-        e.target.innerText = currentPlayer
+    const id = e.target.id;
 
-        if(playerHasWon() !==false){
-            playerText.innerHTML = `${currentPlayer} has won!`
-            let winning_blocks = playerHasWon()
+    if (!spaces[id]) {
+        spaces[id] = currentPlayer;
+        e.target.innerText = currentPlayer;
 
-            winning_blocks.map( box => boxes[box].style.backgroundColor=winnerIndicator)
-            return
+        if (playerHasWon() !== false) {
+            gameActive = false; // Setăm gameActive la false pentru a opri jocul
+            playerText.innerHTML = `${currentPlayer} has won!`;
+            let winning_blocks = playerHasWon();
+
+            winning_blocks.map(box => (boxes[box].style.backgroundColor = winnerIndicator));
+            return;
         }
 
-        currentPlayer = currentPlayer == X_TEXT ? O_TEXT : X_TEXT
+        // Verificăm dacă mai sunt spații disponibile
+        if (!spaces.includes(null)) {
+            gameActive = false; // Setăm gameActive la false pentru a opri jocul
+            playerText.innerHTML = "It's a draw!";
+            return;
+        }
+
+        currentPlayer = currentPlayer == X_TEXT ? O_TEXT : X_TEXT;
     }
 }
 
@@ -59,6 +71,7 @@ function playerHasWon() {
 restartBtn.addEventListener('click', restart)
 
 function restart() {
+    gameActive = true;
     spaces.fill(null)
 
     boxes.forEach( box => {
